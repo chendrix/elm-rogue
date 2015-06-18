@@ -7,10 +7,13 @@ import Rogue.Model exposing (..)
 import Rogue.Update exposing (..)
 import String
 
+
+
 tests : Test
 tests = suite "A Test Suite"
   [ test_updateGameMap_does_not_move_outside_of_bounds
   , test_update_moves_currentPlayerLocation
+  , test_updateGameMap_does_not_move_into_barriers
   ]
 
 test_update_moves_currentPlayerLocation : Test
@@ -51,3 +54,15 @@ test_updateGameMap_does_not_move_outside_of_bounds =
         assertEqual gameMapAtBottomRight.currentPlayerLocation (updateGameMap down gameMapAtBottomRight).currentPlayerLocation
       )
     ]
+
+test_updateGameMap_does_not_move_into_barriers : Test
+test_updateGameMap_does_not_move_into_barriers =
+  let 
+    board = newBoardWithBarriersAt 2 [(0,1)]
+    game_map = GameMap board (0,0) (0,0)
+    right = Input { x =1, y = 0 }
+  in
+    test "Update does not move into barriers" (
+        assertEqual game_map.currentPlayerLocation (updateGameMap right game_map).currentPlayerLocation
+      )
+    

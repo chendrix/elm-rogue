@@ -8,6 +8,7 @@
         "test"
     ],
     "exposed-modules": [],
+    "native-modules": true,
     "dependencies": {
         "elm-lang/core": "2.0.1 <= v < 3.0.0",
         "deadfoxygrandpa/Elm-Test" : "1.0.4 <= v < 2.0.0",
