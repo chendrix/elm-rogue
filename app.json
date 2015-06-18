@@ -1,0 +1,9 @@
+{
+    "name": "Roguelike in Elm",
+    "repository": "https://github.com/chendrix/elm-rogue",
+    "env": {
+        "BUILDPACK_URL": "https://github.com/srid/heroku-buildpack-elm.git",
+        "ELM_COMPILE": "elm make src/Rogue.elm",
+        "ELM_STATIC_DIR": "."
+    }
+}
