@@ -1,0 +1,4 @@
+#!/bin/sh
+
+npm install jsdom
+curl https://raw.githubusercontent.com/maxsnew/IO/master/elm-io.sh > elm-io.sh
