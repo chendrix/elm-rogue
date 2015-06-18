@@ -18,6 +18,7 @@ type alias Location = (Int, Int)
 type alias GameMap =
   { board : Board
   , start : Location
+  , currentPlayerLocation : Location
   }
 
 type alias Board = List (List Cell)
@@ -27,7 +28,6 @@ type Player = Player
 type alias Game =
   { gameMap : GameMap
   , player : Player
-  , location : Location
   }
 
 type Cell = Open Location
@@ -44,8 +44,10 @@ newBoard i =
 
 gameMap : Int -> GameMap
 gameMap i =
+  let startLoc = (0,0) in
   { board = newBoard i
-  , start = (0, 0)
+  , start = startLoc
+  , currentPlayerLocation = startLoc
   }
 
 defaultGame : Game
@@ -55,7 +57,6 @@ defaultGame =
   in
     { gameMap = g
     , player = Player
-    , location = g.start
     }
 
 type alias Dir =
@@ -84,39 +85,42 @@ translate (row,col) dir =
 -- UPDATE
 
 update : Input -> Game -> Game
-update {dir} ({gameMap,player,location} as game) =
+update i game =
+  { game | gameMap <- updateGameMap i game.gameMap }
+
+updateGameMap : Input -> GameMap -> GameMap
+updateGameMap {dir} ({board,start,currentPlayerLocation} as gameMap) =
   let
-    (row, col) = location
-    newLocation = translate location dir
+    newLocation = translate currentPlayerLocation dir
   in
-    if within gameMap.board newLocation
+    if within board newLocation
     then
-      { game | location <- newLocation
+      { gameMap | currentPlayerLocation <- newLocation
       }
     else
-      game
+      gameMap
 
 -- VIEW
 
 view : Game -> Element
-view g = leftAligned (Text.monospace (Text.fromString (toString g)))
+view g = leftAligned (Text.monospace (Text.fromString (toString g.gameMap)))
 
-toString : Game -> String
-toString {gameMap,player,location} =
+toString : GameMap -> String
+toString {board,start,currentPlayerLocation} =
   let
-    rowifier =
-      (\row ->
-        map
-          (\cell ->
-            if isAt location cell
-            then "@"
-            else "."
-          )
-          row
-        |> join ""
-      )
+      rowifier =
+        (\row ->
+          map
+            (\cell ->
+              if  | isAt currentPlayerLocation cell -> "@"
+                  | isAt start cell -> "☐"
+                  | otherwise -> "."
+            )
+            row
+          |> join ""
+        )
   in
-    map rowifier gameMap.board
+    map rowifier board
       |> join "\n"
 
 -- SIGNALS
