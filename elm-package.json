@@ -1,0 +1,14 @@
+{
+    "version": "0.0.1",
+    "summary": "Rogue game",
+    "repository": "https://github.com/chendrix/elm-rogue.git",
+    "license": "MIT",
+    "source-directories": [
+        "src"
+    ],
+    "exposed-modules": [],
+    "dependencies": {
+        "elm-lang/core": "2.0.1 <= v < 3.0.0"
+    },
+    "elm-version": "0.15.0 <= v < 0.16.0"
+}
