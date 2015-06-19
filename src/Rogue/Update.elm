@@ -21,13 +21,11 @@ updateGameMap {dir} p gameMap =
 
 updateBoard : Player -> GameMap -> Location -> GameMap
 updateBoard p gameMap newPlayerLoc =
-  Array.indexedMap (
-    \rowNum row -> Array.indexedMap (
-      \colNum cell -> 
+  matrixMapWithIndex (
+      \(rowNum,colNum) cell -> 
         if  | (rowNum, colNum) == newPlayerLoc -> insertPerson p cell
             | otherwise -> clearCell cell
-        ) row
-  ) gameMap
+    ) gameMap
 
 insertPerson : Player -> Cell -> Cell
 insertPerson p c =

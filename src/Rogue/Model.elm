@@ -49,6 +49,15 @@ gameMap : Int -> Player -> GameMap
 gameMap size p = 
   newBoardWithBarriersAt size (randomizeLocationsWithin size 11) p
 
+matrixMapWithIndex : (Location -> a -> b) -> Array (Array a) -> Array (Array b)
+matrixMapWithIndex f m =
+  Array.indexedMap (
+    \rowNum row -> Array.indexedMap (
+      \colNum cell -> 
+        f (rowNum, colNum) cell
+    ) row
+  ) m 
+
 defaultGame : Game
 defaultGame =
   let
@@ -63,12 +72,9 @@ currentPlayerLocation : GameMap -> Maybe Location
 currentPlayerLocation gameMap =
   let
     matrixOfLocAndHasPlayer =
-      Array.indexedMap (
-        \rowNum row ->
-          Array.indexedMap (
-            \colNum cell -> ((rowNum,colNum), doesContainPlayer cell)
-          ) row
-        ) gameMap
+      matrixMapWithIndex (
+        \loc cell -> (loc, doesContainPlayer cell)
+      ) gameMap
   in
     Array.map toList matrixOfLocAndHasPlayer
     |> toList
