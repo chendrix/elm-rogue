@@ -4,12 +4,11 @@ import Array exposing (..)
 import List exposing (..)
 import Maybe exposing (..)
 import Random exposing (..)
+import Matrix exposing (..)
 
 import Now
 
-type alias Location = (Int, Int)
-
-type alias GameMap = Array (Array Cell)
+type alias GameMap = Matrix Cell
 
 type Player = Player
 
@@ -18,7 +17,12 @@ type alias Game =
   , player : Player
   }
 
-type Cell = Open { player : Maybe Player } | Barrier {}
+type Item = Item
+
+type Cell 
+  = Open  { player : Maybe Player 
+          } 
+  | Barrier {}
 
 type alias Dir =
   { x : Int
@@ -29,15 +33,6 @@ type alias Input =
   { dir : Dir
   }
 
-newBoardWithBarriersAt : Int -> List Location -> Player -> GameMap
-newBoardWithBarriersAt size barrierLocations p =
-  initialize size (
-    \row -> initialize size (
-      \col -> if | (row,col) == (0,0) -> Open { player = Just p }
-                 | (row,col) `member` barrierLocations -> Barrier {}
-                 | otherwise -> Open { player = Nothing }))
-
-
 randomizeLocationsWithin : Int -> Int -> List Location
 randomizeLocationsWithin size numLocations =
   let 
@@ -47,16 +42,14 @@ randomizeLocationsWithin size numLocations =
 
 gameMap : Int -> Player -> GameMap
 gameMap size p = 
-  newBoardWithBarriersAt size (randomizeLocationsWithin size 11) p
-
-matrixMapWithIndex : (Location -> a -> b) -> Array (Array a) -> Array (Array b)
-matrixMapWithIndex f m =
-  Array.indexedMap (
-    \rowNum row -> Array.indexedMap (
-      \colNum cell -> 
-        f (rowNum, colNum) cell
-    ) row
-  ) m 
+  let
+    barrierLocations = randomizeLocationsWithin size 11
+  in
+    generateMatrix size (
+      \loc -> if | loc == (0,0) -> Open { player = Just p }
+                 | loc `member` barrierLocations -> Barrier {}
+                 | otherwise -> Open { player = Nothing }
+    )
 
 defaultGame : Game
 defaultGame =
@@ -72,7 +65,7 @@ currentPlayerLocation : GameMap -> Maybe Location
 currentPlayerLocation gameMap =
   let
     matrixOfLocAndHasPlayer =
-      matrixMapWithIndex (
+      mapWithLocation (
         \loc cell -> (loc, doesContainPlayer cell)
       ) gameMap
   in

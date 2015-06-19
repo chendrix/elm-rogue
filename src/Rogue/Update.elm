@@ -1,7 +1,7 @@
 module Rogue.Update where
 
 import Rogue.Model exposing (..)
-import Array
+import Matrix exposing (..)
 import Maybe
 import Maybe exposing (andThen)
 
@@ -21,7 +21,7 @@ updateGameMap {dir} p gameMap =
 
 updateBoard : Player -> GameMap -> Location -> GameMap
 updateBoard p gameMap newPlayerLoc =
-  matrixMapWithIndex (
+  mapWithLocation (
       \(rowNum,colNum) cell -> 
         if  | (rowNum, colNum) == newPlayerLoc -> insertPerson p cell
             | otherwise -> clearCell cell
