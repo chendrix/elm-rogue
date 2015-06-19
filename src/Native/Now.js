@@ -14,7 +14,7 @@ Elm.Native.Now.make = function(localRuntime) {
   var Result = Elm.Result.make(localRuntime);
 
   return localRuntime.Native.Now.values = {
-    loadTime: (new window.Date).getTime()
+    loadTime: (new Date()).getTime()
   };
 
 };
