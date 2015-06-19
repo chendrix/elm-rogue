@@ -1,12 +1,19 @@
 language: node_js
 node_js:
-  - stable
+- stable
 install:
-  - npm install --global elm
-  - curl https://raw.githubusercontent.com/maxsnew/IO/master/elm-io.sh > elm-io.sh
-  - npm install jsdom
-  - elm-package install -y
+- npm install --global elm
+- curl https://raw.githubusercontent.com/maxsnew/IO/master/elm-io.sh > elm-io.sh
+- npm install jsdom
+- elm-package install -y
 before_script:
-  - elm-make --yes --output raw-test.js TestRunner.elm
-  - bash elm-io.sh raw-test.js test.js
+- elm-make --yes --output raw-test.js TestRunner.elm
+- bash elm-io.sh raw-test.js test.js
 script: node test.js
+deploy:
+  provider: heroku
+  api_key:
+    secure: 2HMcVr4/jCry5PU2x9vLRcmmN7+czEfxAgqoXXPnVwOvGlOI1UrCxo8oMHvsxTAp+LX4eyim11sjzkK3DXsQL4zhLnFW8qH2PVinCwOiDfE1CC52dO/DXejZMLnlnx8gcpjcThJKMeZkPdPjPuFXR2ZaFNRtQmENyAp+0UbEj7ayGRKb6w8aei2DNvlMRKYwYWJPdrjStgR5SJUuOW3ZjL+DXYLFkYmWnvt9GRI2yJt4kY1WFozUXLuRMRAaLwRYuqNCsT2KXKg9YlBZkuLN9H4n4ro0wa67FGO27PMzvl0PwUKUn4ht39jQDa6Dt+ooGkDtzlVWi0rCZSoZSNbG/xfxL94jR3yEkq/9k+GDCKkT1oSP5KBCoVBrkRCFYaWd5cQPCu37VurczxQx525FUxJpZT8Lf6pOoT+Saeuzfu1UeoaIvHBBFDuSnHWLxya2Hkv18hgm3LkiA2RLBvla+EkNrbfOldiz5XVMTugvIV/eck7oTPapq2dC79zTr/fm5dk4hA3iCDIFzUF9umUneFgzdaw7HphaFsco1bj7SAzTmEfTeHamz6Vnu47r0J+s5cPmhCYc7bZqkopep2TX8yEZomY4uJ8YrLArY998K7tK5FaRDkBwRaz/IjsdgvkTrQ8WSTBBlx94FPOXlaIJm73WCgwSoRRvjvb17TWNn5U=
+  app: elm-rogue
+  on:
+    repo: chendrix/elm-rogue
