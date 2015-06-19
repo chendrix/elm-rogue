@@ -39,8 +39,8 @@ randomizeLocationsWithin size numLocations =
   in
     generate locationGenerator (initialSeed (round Now.loadTime)) |> fst
 
-defaultGameMap : GameMap
-defaultGameMap = Matrix.initialize 10 (\_ -> Open {player = Nothing})
+defaultGameMap : Int -> GameMap
+defaultGameMap size = Matrix.initialize size (\_ -> Open {player = Nothing})
 
 generateMap : GameMap -> List (GameMap -> GameMap) -> GameMap
 generateMap startingMap mapTransformers =
@@ -52,7 +52,7 @@ defaultGame =
     p = Player
     startLoc = (0,0)
     size = 10
-    g = generateMap defaultGameMap
+    g = generateMap (defaultGameMap size)
           [ insertPlayer p startLoc
           , setBarriers (randomizeLocationsWithin size 11)
           ]
@@ -60,6 +60,8 @@ defaultGame =
     { gameMap = g
     , player = p
     }
+
+--doGame : Location -> Location -> List Location -> 
 
 insertPlayer : Player -> Location -> GameMap -> GameMap
 insertPlayer p here gm =
