@@ -13,25 +13,24 @@ view : Game -> Element
 view g = viewGameMap g.gameMap
 
 viewGameMap : GameMap -> Element
-viewGameMap {board,start,currentPlayerLocation} =
+viewGameMap gameMap =
   let
     rowifier =
       (\row ->
-        Array.map
-          (\cell ->
-            if  | isAt currentPlayerLocation cell -> person
-                | not <| isOpen cell -> barrier
-                | otherwise -> open
-          )
-          row
+        Array.map viewCell row
         |> toList
         |> flow right
       )
   in
-    Array.map rowifier board
+    Array.map rowifier gameMap
       |> toList
       |> flow down
 
+viewCell : Cell -> Element
+viewCell c =
+  case c of
+    Open {player} -> open player
+    Barrier _ -> barrier
 
 txt str = 
   Text.fromString str
@@ -48,7 +47,13 @@ barrier =
   |> (\sq -> collage 16 16 [sq])
   |> standardize
 
-open =
+open : Maybe a -> Element
+open p =
+  case p of
+    Just _ -> person
+    Nothing -> unoccupied
+  
+unoccupied =
   txt "."
   |> standardize
 
@@ -56,22 +61,3 @@ standardize : Element -> Element
 standardize el =
   el
   |> container 16 16 middle
-
---toString  =
---  let
---    rowifier =
---      (\row ->
---        Array.map
---          (\cell ->
---            if  | isAt currentPlayerLocation cell -> "@"
---                | not <| isOpen cell -> "#"
---                | otherwise -> "."
---          )
---          row
---        |> toList
---        |> join ""
---      )
---  in
---    Array.map rowifier board
---      |> toList
---      |> join "\n"
