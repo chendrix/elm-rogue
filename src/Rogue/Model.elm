@@ -39,26 +39,41 @@ randomizeLocationsWithin size numLocations =
   in
     generate locationGenerator (initialSeed (round Now.loadTime)) |> fst
 
-gameMap : Int -> Player -> GameMap
-gameMap size p = 
-  let
-    barrierLocations = randomizeLocationsWithin size 11
-  in
-    Matrix.initialize size (
-      \loc -> if | loc == (0,0) -> Open { player = Just p }
-                 | loc `member` barrierLocations -> Barrier {}
-                 | otherwise -> Open { player = Nothing }
-    )
+defaultGameMap : GameMap
+defaultGameMap = Matrix.initialize 10 (\_ -> Open {player = Nothing})
+
+generateMap : GameMap -> List (GameMap -> GameMap) -> GameMap
+generateMap startingMap mapTransformers =
+  foldr (<|) startingMap mapTransformers
 
 defaultGame : Game
 defaultGame =
   let
     p = Player
-    g = gameMap 10 p
+    startLoc = (0,0)
+    size = 10
+    g = generateMap defaultGameMap
+          [ insertPlayer p startLoc
+          , setBarriers (randomizeLocationsWithin size 11)
+          ]
   in
     { gameMap = g
     , player = p
     }
+
+insertPlayer : Player -> Location -> GameMap -> GameMap
+insertPlayer p here gm =
+  Matrix.mapWithLocation (
+    \location cell -> if location == here then Open {player = Just p} else cell
+  ) gm
+
+setBarriers : List Location -> GameMap -> GameMap
+setBarriers barrierLocations gm =
+  Matrix.mapWithLocation (
+    \location cell -> if | doesContainPlayer cell -> cell
+                         | location `member` barrierLocations -> Barrier {}
+                         | otherwise -> cell
+  ) gm
 
 currentPlayerLocation : GameMap -> Maybe Location
 currentPlayerLocation gameMap =
