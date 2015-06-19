@@ -1,6 +1,5 @@
 module Rogue.Model where
 
-import Array exposing (..)
 import List exposing (..)
 import Maybe exposing (..)
 import Random exposing (..)
@@ -45,7 +44,7 @@ gameMap size p =
   let
     barrierLocations = randomizeLocationsWithin size 11
   in
-    generateMatrix size (
+    Matrix.initialize size (
       \loc -> if | loc == (0,0) -> Open { player = Just p }
                  | loc `member` barrierLocations -> Barrier {}
                  | otherwise -> Open { player = Nothing }
@@ -69,9 +68,8 @@ currentPlayerLocation gameMap =
         \loc cell -> (loc, doesContainPlayer cell)
       ) gameMap
   in
-    Array.map toList matrixOfLocAndHasPlayer
-    |> toList
-    |> concat
+    matrixOfLocAndHasPlayer
+    |> flatten
     |> List.filter snd
     |> List.map fst
     |> head
@@ -91,7 +89,3 @@ isJust m =
 translate : Dir -> Location -> Location
 translate  dir (row,col)=
   (row - dir.y, col + dir.x)
-
-cellAt : GameMap -> Location ->  Maybe Cell
-cellAt gameMap (rowNum, colNum) =
-  Array.get rowNum gameMap `andThen` get colNum

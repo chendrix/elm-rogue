@@ -5,7 +5,7 @@ import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)
 import String exposing (join)
 import Text
-import Array exposing (..)
+import Matrix exposing (..)
 
 import Rogue.Model exposing (..)
 
@@ -14,17 +14,10 @@ view g = viewGameMap g.gameMap
 
 viewGameMap : GameMap -> Element
 viewGameMap gameMap =
-  let
-    rowifier =
-      (\row ->
-        Array.map viewCell row
-        |> toList
-        |> flow right
-      )
-  in
-    Array.map rowifier gameMap
-      |> toList
-      |> flow down
+  Matrix.map viewCell gameMap
+  |> Matrix.toList
+  |> List.map (flow right)
+  |> flow down
 
 viewCell : Cell -> Element
 viewCell c =
