@@ -9,7 +9,9 @@ import Now
 
 type alias GameMap = Matrix Cell
 
-type Player = Player
+type alias Player = 
+  { inventory : List Item
+  }
 
 type alias Game =
   { gameMap : GameMap
@@ -36,6 +38,9 @@ type alias Input =
   { dir : Dir
   }
 
+newPlayer : Player
+newPlayer = {inventory = []}
+
 randomizeLocationsWithin : Int -> Int -> List Location
 randomizeLocationsWithin size numLocations =
   let 
@@ -57,7 +62,7 @@ generateMap startingMap mapTransformers =
 defaultGame : Game
 defaultGame =
   let
-    p = Player
+    p = newPlayer
     startLoc = (0,0)
     size = 10
     g = generateMap (defaultGameMap size)
@@ -70,17 +75,32 @@ defaultGame =
     , player = p
     }
 
-addPlayer : Player -> Cell -> Cell
-addPlayer p c =
+updateContents : (Contents -> Contents) -> Cell -> Cell
+updateContents f c =
   case c of
-    Open cell -> Open {cell | player <- Just p}
+    Open contents -> Open (f contents)
     otherwise -> c
 
+addPlayer : Player -> Cell -> Cell
+addPlayer p c =
+  let
+    f : Contents -> Contents
+    f = (\contents -> 
+          { contents | 
+              player <- Just 
+                { p | inventory <- (p.inventory `append` contents.items) 
+                },
+              items <- [] 
+          }
+        )
+  in updateContents f c
+    
+
 removePlayer : Cell -> Cell
-removePlayer c =
-  case c of
-    Open cell -> Open {cell | player <- Nothing}
-    otherwise -> c
+removePlayer =
+  updateContents (
+    \contents -> {contents | player <- Nothing}
+  )
 
 insertPlayer : Player -> Location -> GameMap -> GameMap
 insertPlayer p here gm =
@@ -103,9 +123,7 @@ addItems itemLocations gm =
   in
     Matrix.mapWithLocation (
       \location cell -> if | location `member` itemLocations -> 
-                              case cell of
-                                Open c -> Open { c | items <- (repeat (numItems location) Item) }
-                                otherwise -> cell
+                              updateContents (\c -> { c | items <- (repeat (numItems location) Item) }) cell
                            | otherwise -> cell
 
     ) gm

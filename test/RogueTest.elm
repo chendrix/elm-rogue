@@ -19,7 +19,7 @@ tests = suite "A Test Suite"
 test_update_moves_currentPlayerLocation : Test
 test_update_moves_currentPlayerLocation =
   let
-    player = Player
+    player = newPlayer
     game_map = generateMap (defaultGameMap 2) [ insertPlayer player (0,0) ]
     down_right = Input {x=1,y=-1}
   in
@@ -30,7 +30,7 @@ test_update_moves_currentPlayerLocation =
 test_updateGameMap_does_not_move_outside_of_bounds : Test
 test_updateGameMap_does_not_move_outside_of_bounds = 
   let 
-    p = Player
+    p = newPlayer
     game_map = defaultGameMap 2
     gameMapAtTopLeft = generateMap game_map [ insertPlayer p (0,0) ]
     left = Input { x =-1, y = 0 }
@@ -57,7 +57,7 @@ test_updateGameMap_does_not_move_outside_of_bounds =
 test_updateGameMap_does_not_move_into_barriers : Test
 test_updateGameMap_does_not_move_into_barriers =
   let 
-    p = Player
+    p = newPlayer
     game_map = generateMap (defaultGameMap 2) [ insertPlayer p (0,0), setBarriers [(0,1)] ]
     right = Input { x =1, y = 0 }
   in
