@@ -4,12 +4,11 @@
 
 [![Build Status](https://travis-ci.org/chendrix/elm-rogue.svg?branch=master)](https://travis-ci.org/chendrix/elm-rogue)
 
-## Build Instructions
+## Scripts
 
-Run the following command from the root of this project:
+There are several scripts located in `./scripts` which can be run:
 
-```bash
-elm-make src/Rogue.elm
-```
-
-Then open `index.html` in your browser!
+* `bootstrap` to install the relevant stuff to run your tests for the first time
+* `run_tests` to run your tests
+* `build` to build `elm.js`
+* `open` to build and open the project in a browser
