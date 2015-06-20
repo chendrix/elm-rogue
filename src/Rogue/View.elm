@@ -7,6 +7,7 @@ import String exposing (join)
 import Text
 import Matrix exposing (..)
 
+import List
 import Rogue.Model exposing (..)
 
 view : Game -> Element
@@ -22,7 +23,7 @@ viewGameMap gameMap =
 viewCell : Cell -> Element
 viewCell c =
   case c of
-    Open {player} -> open player
+    Open contents -> open contents
     Barrier _ -> barrier
 
 txt str = 
@@ -40,11 +41,19 @@ barrier =
   |> (\sq -> collage 16 16 [sq])
   |> standardize
 
-open : Maybe a -> Element
-open p =
-  case p of
-    Just _ -> person
-    Nothing -> unoccupied
+open : Contents -> Element
+open {player,items} =
+  let 
+    itemCount = List.length items 
+  in
+    case player of
+      Just _ -> person
+      Nothing -> 
+        (if itemCount == 0 then "." else (itemCount |> toString))
+        |> txt
+        |> standardize
+
+
   
 unoccupied =
   txt "."

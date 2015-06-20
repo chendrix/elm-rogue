@@ -18,9 +18,13 @@ type alias Game =
 
 type Item = Item
 
+type alias Contents = 
+  { player : Maybe Player 
+  , items : List Item
+  } 
+
 type Cell 
-  = Open  { player : Maybe Player 
-          } 
+  = Open Contents
   | Barrier {}
 
 type alias Dir =
@@ -39,8 +43,12 @@ randomizeLocationsWithin size numLocations =
   in
     generate locationGenerator (initialSeed (round Now.loadTime)) |> fst
 
+defaultCell : Cell
+defaultCell =
+  Open {player = Nothing, items = []}
+
 defaultGameMap : Int -> GameMap
-defaultGameMap size = Matrix.initialize size (\_ -> Open {player = Nothing})
+defaultGameMap size = Matrix.initialize size (always defaultCell)
 
 generateMap : GameMap -> List (GameMap -> GameMap) -> GameMap
 generateMap startingMap mapTransformers =
@@ -55,18 +63,29 @@ defaultGame =
     g = generateMap (defaultGameMap size)
           [ insertPlayer p startLoc
           , setBarriers (randomizeLocationsWithin size 11)
+          , addItems (randomizeLocationsWithin size 30)
           ]
   in
     { gameMap = g
     , player = p
     }
 
---doGame : Location -> Location -> List Location -> 
+addPlayer : Player -> Cell -> Cell
+addPlayer p c =
+  case c of
+    Open cell -> Open {cell | player <- Just p}
+    otherwise -> c
+
+removePlayer : Cell -> Cell
+removePlayer c =
+  case c of
+    Open cell -> Open {cell | player <- Nothing}
+    otherwise -> c
 
 insertPlayer : Player -> Location -> GameMap -> GameMap
 insertPlayer p here gm =
   Matrix.mapWithLocation (
-    \location cell -> if location == here then Open {player = Just p} else cell
+    \location cell -> if location == here then addPlayer p cell else cell
   ) gm
 
 setBarriers : List Location -> GameMap -> GameMap
@@ -76,6 +95,20 @@ setBarriers barrierLocations gm =
                          | location `member` barrierLocations -> Barrier {}
                          | otherwise -> cell
   ) gm
+
+addItems : List Location -> GameMap -> GameMap
+addItems itemLocations gm =
+  let
+    numItems = (\location -> filter (\otherLoc -> otherLoc == location) itemLocations |> length)
+  in
+    Matrix.mapWithLocation (
+      \location cell -> if | location `member` itemLocations -> 
+                              case cell of
+                                Open c -> Open { c | items <- (repeat (numItems location) Item) }
+                                otherwise -> cell
+                           | otherwise -> cell
+
+    ) gm
 
 currentPlayerLocation : GameMap -> Maybe Location
 currentPlayerLocation gameMap =

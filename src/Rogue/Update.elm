@@ -23,21 +23,10 @@ updateBoard : Player -> GameMap -> Location -> GameMap
 updateBoard p gameMap newPlayerLoc =
   mapWithLocation (
       \(rowNum,colNum) cell -> 
-        if  | (rowNum, colNum) == newPlayerLoc -> insertPerson p cell
-            | otherwise -> clearCell cell
+        if  | (rowNum, colNum) == newPlayerLoc -> addPlayer p cell
+            | otherwise -> removePlayer cell
     ) gameMap
 
-insertPerson : Player -> Cell -> Cell
-insertPerson p c =
-  case c of
-    Open _ -> Open {player = Just p}
-    otherwise -> c
-
-clearCell : Cell -> Cell
-clearCell c =
-  case c of
-    Open _ -> Open {player = Nothing}
-    otherwise -> c
 
 movePlayerToLocation : GameMap -> Maybe Location -> Maybe Location -> Maybe Location
 movePlayerToLocation gameMap fromLoc toLoc =
