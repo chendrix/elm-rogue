@@ -9,23 +9,23 @@ import Now
 
 type alias GameMap = Matrix Cell
 
-type alias Player = 
+type alias Player =
   { inventory : List Item
   }
 
 type alias Game =
   { gameMap : GameMap
   , player : Player
+  , playerLocation : Location
   }
 
 type Item = Item
 
-type alias Contents = 
-  { player : Maybe Player 
-  , items : List Item
-  } 
+type alias Contents =
+  { items : List Item
+  }
 
-type Cell 
+type Cell
   = Open Contents
   | Barrier {}
 
@@ -43,14 +43,14 @@ newPlayer = {inventory = []}
 
 randomizeLocationsWithin : Int -> Int -> List Location
 randomizeLocationsWithin size numLocations =
-  let 
+  let
     locationGenerator = list numLocations (pair (int 0 size) (int 0 size))
   in
     generate locationGenerator (initialSeed (round Now.loadTime)) |> fst
 
 defaultCell : Cell
 defaultCell =
-  Open {player = Nothing, items = []}
+  Open {items = []}
 
 defaultGameMap : Int -> GameMap
 defaultGameMap size = Matrix.initialize size (always defaultCell)
@@ -59,21 +59,39 @@ generateMap : GameMap -> List (GameMap -> GameMap) -> GameMap
 generateMap startingMap mapTransformers =
   foldr (<|) startingMap mapTransformers
 
+generateGame : Game -> List (Game -> Game) -> Game
+generateGame =
+  foldr (<|)
+
 defaultGame : Game
 defaultGame =
   let
     p = newPlayer
     startLoc = (0,0)
     size = 10
-    g = generateMap (defaultGameMap size)
-          [ insertPlayer p startLoc
-          , setBarriers (randomizeLocationsWithin size 11)
-          , addItems (randomizeLocationsWithin size 30)
-          ]
+    g = generateMap (defaultGameMap size) []
   in
     { gameMap = g
     , player = p
+    , playerLocation = startLoc
     }
+
+newGame : Game
+newGame =
+  let
+    p = newPlayer
+    startLoc = (0,0)
+    size = 10
+    g = generateMap (defaultGameMap size) []
+    startingGame =  { gameMap = g
+                    , player = p
+                    , playerLocation = startLoc
+                    }
+  in
+    generateGame startingGame
+      [ setBarriers (randomizeLocationsWithin size 11)
+      , addItems (randomizeLocationsWithin size 30)
+      ]
 
 updateContents : (Contents -> Contents) -> Cell -> Cell
 updateContents f c =
@@ -81,72 +99,31 @@ updateContents f c =
     Open contents -> Open (f contents)
     otherwise -> c
 
-addPlayer : Player -> Cell -> Cell
-addPlayer p c =
+setBarriers : List Location -> Game -> Game
+setBarriers barrierLocations game =
   let
-    f : Contents -> Contents
-    f = (\contents -> 
-          { contents | 
-              player <- Just 
-                { p | inventory <- (p.inventory `append` contents.items) 
-                },
-              items <- [] 
-          }
-        )
-  in updateContents f c
-    
-
-removePlayer : Cell -> Cell
-removePlayer =
-  updateContents (
-    \contents -> {contents | player <- Nothing}
-  )
-
-insertPlayer : Player -> Location -> GameMap -> GameMap
-insertPlayer p here gm =
-  Matrix.mapWithLocation (
-    \location cell -> if location == here then addPlayer p cell else cell
-  ) gm
-
-setBarriers : List Location -> GameMap -> GameMap
-setBarriers barrierLocations gm =
-  Matrix.mapWithLocation (
-    \location cell -> if | doesContainPlayer cell -> cell
-                         | location `member` barrierLocations -> Barrier {}
-                         | otherwise -> cell
-  ) gm
-
-addItems : List Location -> GameMap -> GameMap
-addItems itemLocations gm =
-  let
-    numItems = (\location -> filter (\otherLoc -> otherLoc == location) itemLocations |> length)
-  in
-    Matrix.mapWithLocation (
-      \location cell -> if | location `member` itemLocations -> 
-                              updateContents (\c -> { c | items <- (repeat (numItems location) Item) }) cell
+    newMap = Matrix.mapWithLocation (
+      \location cell -> if | location == game.playerLocation -> cell
+                           | location `member` barrierLocations -> Barrier {}
                            | otherwise -> cell
-
-    ) gm
-
-currentPlayerLocation : GameMap -> Maybe Location
-currentPlayerLocation gameMap =
-  let
-    matrixOfLocAndHasPlayer =
-      mapWithLocation (
-        \loc cell -> (loc, doesContainPlayer cell)
-      ) gameMap
+    ) game.gameMap
   in
-    matrixOfLocAndHasPlayer
-    |> flatten
-    |> List.filter snd
-    |> List.map fst
-    |> head
+    { game | gameMap <- newMap }
 
-doesContainPlayer : Cell -> Bool
-doesContainPlayer c =
-  case c of
-    Open {player} -> isJust player
-    otherwise -> False
+addItems : List Location -> Game -> Game
+addItems itemLocations game =
+  let
+    numItems location = length <| filter ((==) location) itemLocations
+    newMap =
+      Matrix.mapWithLocation (
+        \location cell -> if | location `member` itemLocations ->
+                                updateContents (\c -> { c | items <- (repeat (numItems location) Item) }) cell
+                             | otherwise -> cell
+
+      ) game.gameMap
+  in
+    { game | gameMap <- newMap }
+
 
 isJust : Maybe a -> Bool
 isJust m =

@@ -14,7 +14,7 @@ main =
 
 gameState : Signal Game
 gameState =
-  Signal.foldp update defaultGame input
+  Signal.foldp update newGame input
 
 input : Signal Input
 input =

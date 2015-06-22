@@ -11,22 +11,31 @@ import List
 import Rogue.Model exposing (..)
 
 view : Game -> Element
-view g = viewGameMap g.gameMap
+view g =
+  flow down
+    [ viewGameMap g.playerLocation g.gameMap
+    , viewPlayer g.player
+    ]
 
-viewGameMap : GameMap -> Element
-viewGameMap gameMap =
-  Matrix.map viewCell gameMap
+viewGameMap : Location -> GameMap -> Element
+viewGameMap playerLocation gameMap =
+  Matrix.mapWithLocation (viewCell playerLocation) gameMap
   |> Matrix.toList
   |> List.map (flow right)
   |> flow down
 
-viewCell : Cell -> Element
-viewCell c =
-  case c of
-    Open contents -> open contents
-    Barrier _ -> barrier
+viewCell : Location -> Location -> Cell -> Element
+viewCell curLocation cellLocation c =
+  if | curLocation == cellLocation -> person
+     | otherwise -> case c of
+        Open contents -> open contents
+        Barrier _ -> barrier
 
-txt str = 
+viewPlayer : Player -> Element
+viewPlayer {inventory} =
+  txt (String.join "" ["Item Count: ", List.length inventory |> toString ])
+
+txt str =
   Text.fromString str
   |> Text.monospace
   |> centered
@@ -42,19 +51,14 @@ barrier =
   |> standardize
 
 open : Contents -> Element
-open {player,items} =
-  let 
-    itemCount = List.length items 
+open {items} =
+  let
+    itemCount = List.length items
   in
-    case player of
-      Just _ -> person
-      Nothing -> 
-        (if itemCount == 0 then "." else (itemCount |> toString))
-        |> txt
-        |> standardize
+    (if itemCount == 0 then "." else (itemCount |> toString))
+    |> txt
+    |> standardize
 
-
-  
 unoccupied =
   txt "."
   |> standardize

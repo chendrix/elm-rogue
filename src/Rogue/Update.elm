@@ -4,34 +4,51 @@ import Rogue.Model exposing (..)
 import Matrix exposing (..)
 import Maybe
 import Maybe exposing (andThen)
+import List exposing (append)
 
 update : Input -> Game -> Game
-update i game =
-  { game | gameMap <- updateGameMap i game.player game.gameMap }
-
-updateGameMap : Input -> Player -> GameMap -> GameMap
-updateGameMap {dir} p gameMap =
+update {dir} ({gameMap,player,playerLocation} as game) =
   let
-    maybeCurLocation = currentPlayerLocation gameMap
-    maybeTranslatedLocation = Maybe.map (translate dir) (maybeCurLocation)
-    maybeNewLocation = movePlayerToLocation gameMap maybeCurLocation maybeTranslatedLocation
-    maybeNewGameMap = Maybe.map (updateBoard p gameMap) maybeNewLocation 
+    translatedLocation = (translate dir playerLocation)
+    newLocation = movePlayerToLocation gameMap playerLocation translatedLocation
+
+    newCell = cellAt gameMap newLocation
+    newPlayer = Maybe.map (flip updatePlayer <| player) newCell |> Maybe.withDefault player
+
+    newMap = updateGameMap newLocation gameMap
   in
-    Maybe.withDefault gameMap maybeNewGameMap
+    { game  | gameMap <- newMap
+            , player <- newPlayer
+            , playerLocation <- newLocation
+    }
 
-updateBoard : Player -> GameMap -> Location -> GameMap
-updateBoard p gameMap newPlayerLoc =
+updatePlayer : Cell -> Player -> Player
+updatePlayer cell player =
+  case cell of
+    Open {items} -> {player | inventory <- player.inventory `append` items}
+    otherwise -> player
+
+updateGameMap : Location -> GameMap -> GameMap
+updateGameMap newPlayerLoc gameMap =
   mapWithLocation (
-      \(rowNum,colNum) cell -> 
-        if  | (rowNum, colNum) == newPlayerLoc -> addPlayer p cell
-            | otherwise -> removePlayer cell
-    ) gameMap
+    \location cell ->
+      if  | location == newPlayerLoc -> removeItems cell
+          | otherwise -> cell
+  ) gameMap
+
+removeItems : Cell -> Cell
+removeItems =
+  updateContents (\contents -> {contents | items <- [] })
 
 
-movePlayerToLocation : GameMap -> Maybe Location -> Maybe Location -> Maybe Location
+movePlayerToLocation : GameMap -> Location -> Location -> Location
 movePlayerToLocation gameMap fromLoc toLoc =
-  toLoc `andThen` (cellAt gameMap) `andThen` (\cell -> 
+  let
+    cellChooser cell =
       case cell of
         Open _ -> toLoc
         otherwise -> fromLoc
-    )
+  in
+    cellAt gameMap toLoc
+    |> Maybe.map cellChooser
+    |> Maybe.withDefault fromLoc
