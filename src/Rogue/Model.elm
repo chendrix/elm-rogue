@@ -55,43 +55,27 @@ defaultCell =
 defaultGameMap : Int -> GameMap
 defaultGameMap size = Matrix.initialize size (always defaultCell)
 
-generateMap : GameMap -> List (GameMap -> GameMap) -> GameMap
-generateMap startingMap mapTransformers =
-  foldr (<|) startingMap mapTransformers
-
-generateGame : Game -> List (Game -> Game) -> Game
-generateGame =
+applyTransformations : a -> List (a -> a) -> a
+applyTransformations =
   foldr (<|)
 
 defaultGame : Game
 defaultGame =
-  let
-    p = newPlayer
-    startLoc = (0,0)
-    size = 10
-    g = generateMap (defaultGameMap size) []
-  in
-    { gameMap = g
-    , player = p
-    , playerLocation = startLoc
-    }
+  newGame newPlayer (0,0) 10
+    [ setBarriers (randomizeLocationsWithin 10 11)
+    , addItems (randomizeLocationsWithin 10 30)
+    ]
 
-newGame : Game
-newGame =
+newGame : Player -> Location -> Int -> List (Game -> Game) -> Game
+newGame p startLoc size transformations =
   let
-    p = newPlayer
-    startLoc = (0,0)
-    size = 10
-    g = generateMap (defaultGameMap size) []
+    g = defaultGameMap size
     startingGame =  { gameMap = g
                     , player = p
                     , playerLocation = startLoc
                     }
   in
-    generateGame startingGame
-      [ setBarriers (randomizeLocationsWithin size 11)
-      , addItems (randomizeLocationsWithin size 30)
-      ]
+    applyTransformations startingGame transformations
 
 updateContents : (Contents -> Contents) -> Cell -> Cell
 updateContents f c =
