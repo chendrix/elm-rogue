@@ -9,8 +9,10 @@ import Now
 
 type alias GameMap = Matrix Cell
 
+type alias HitPoints = Int
 type alias Player =
   { inventory : List Item
+  , hp : HitPoints
   }
 
 type alias Game =
@@ -39,7 +41,7 @@ type alias Input =
   }
 
 newPlayer : Player
-newPlayer = {inventory = []}
+newPlayer = {inventory = [], hp = 100}
 
 randomizeLocationsWithin : Int -> Int -> List Location
 randomizeLocationsWithin size numLocations =

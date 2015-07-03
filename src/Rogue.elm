@@ -6,6 +6,7 @@ import Numpad
 import Rogue.Model exposing (..)
 import Rogue.Update exposing (..)
 import Rogue.View exposing (..)
+import Signal exposing ((<~), (~), Signal)
 
 -- SIGNALS
 
@@ -18,8 +19,9 @@ gameState =
 
 input : Signal Input
 input =
-  Signal.map Input <| Signal.mergeMany
-    [ Keyboard.wasd
-    , Keyboard.arrows
-    , Numpad.numpad
-    ]
+  Input <~
+    Signal.mergeMany
+      [ Keyboard.wasd
+      , Keyboard.arrows
+      , Numpad.numpad
+      ]

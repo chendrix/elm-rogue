@@ -32,8 +32,12 @@ viewCell curLocation cellLocation c =
         Barrier _ -> barrier
 
 viewPlayer : Player -> Element
-viewPlayer {inventory} =
-  txt (String.join "" ["Item Count: ", List.length inventory |> toString ])
+viewPlayer {inventory, hp} =
+  flow down
+    [ txt (String.join "" ["Item Count: ", List.length inventory |> toString ])
+    , txt (String.join "" ["Current HP: ", hp |> toString ])
+    ]
+
 
 txt str =
   Text.fromString str
