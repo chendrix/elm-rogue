@@ -40,7 +40,10 @@ update input ({gameMap,player,playerLocation} as game) =
 updatePlayer : Cell -> Player -> Player
 updatePlayer cell player =
   case cell of
-    Open {items} -> {player | inventory <- player.inventory `append` items}
+    Open {items} -> { player
+                        | inventory <- player.inventory `append` items
+                        , hp <- player.hp + toFloat (List.length items)
+                    }
     otherwise -> player
 
 updateGameMap : Location -> GameMap -> GameMap
