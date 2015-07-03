@@ -12,10 +12,11 @@ import Rogue.Model exposing (..)
 
 view : Game -> Element
 view g =
-  flow down
-    [ viewGameMap g.playerLocation g.gameMap
-    , viewPlayer g.player
-    ]
+  if | gameOver g -> txt "Game Over!"
+     | otherwise -> flow down
+        [ viewGameMap g.playerLocation g.gameMap
+        , viewPlayer g.player
+        ]
 
 viewGameMap : Location -> GameMap -> Element
 viewGameMap playerLocation gameMap =

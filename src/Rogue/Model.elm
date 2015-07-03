@@ -37,6 +37,9 @@ type alias Dir =
   , y : Int
   }
 
+gameOver : Game -> Bool
+gameOver {player} = player.hp <= 0
+
 newPlayer : Player
 newPlayer = {inventory = [], hp = 100}
 
