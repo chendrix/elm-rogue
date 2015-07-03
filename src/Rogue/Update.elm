@@ -5,22 +5,37 @@ import Matrix exposing (..)
 import Maybe
 import Maybe exposing (andThen)
 import List exposing (append)
+import Time exposing (..)
+
+type Input
+  = Input { dir : Dir
+          }
+  | TimeDelta Time
 
 update : Input -> Game -> Game
-update {dir} ({gameMap,player,playerLocation} as game) =
-  let
-    translatedLocation = (translate dir playerLocation)
-    newLocation = movePlayerToLocation gameMap playerLocation translatedLocation
+update input ({gameMap,player,playerLocation} as game) =
+  case input of
+    Input {dir} ->
+      let
+        translatedLocation = (translate dir playerLocation)
+        newLocation = movePlayerToLocation gameMap playerLocation translatedLocation
 
-    newCell = cellAt gameMap newLocation
-    newPlayer = Maybe.map (flip updatePlayer <| player) newCell |> Maybe.withDefault player
+        newCell = cellAt gameMap newLocation
+        newPlayer =
+          Maybe.map (flip updatePlayer <| player) newCell
+          |> Maybe.withDefault player
 
-    newMap = updateGameMap newLocation gameMap
-  in
-    { game  | gameMap <- newMap
-            , player <- newPlayer
-            , playerLocation <- newLocation
-    }
+        newMap = updateGameMap newLocation gameMap
+      in
+        { game  | gameMap <- newMap
+                , player <- newPlayer
+                , playerLocation <- newLocation
+        }
+    TimeDelta delta ->
+      let
+        newPlayer = { player | hp <- player.hp - (delta / 100) }
+      in
+        { game | player <- newPlayer }
 
 updatePlayer : Cell -> Player -> Player
 updatePlayer cell player =

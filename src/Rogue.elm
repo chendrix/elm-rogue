@@ -6,7 +6,8 @@ import Numpad
 import Rogue.Model exposing (..)
 import Rogue.Update exposing (..)
 import Rogue.View exposing (..)
-import Signal exposing ((<~), (~), Signal)
+import Signal exposing (..)
+import Time exposing (..)
 
 -- SIGNALS
 
@@ -19,9 +20,15 @@ gameState =
 
 input : Signal Input
 input =
-  Input <~
-    Signal.mergeMany
-      [ Keyboard.wasd
-      , Keyboard.arrows
-      , Numpad.numpad
-      ]
+  mergeMany
+    [ (\d -> Input { dir = d }) <~
+        Signal.mergeMany
+          [ Keyboard.wasd
+          , Keyboard.arrows
+          , Numpad.numpad
+          ]
+    , TimeDelta <~ delta
+    ]
+
+delta : Signal Time
+delta = Signal.map (\t -> t / 20) (fps 30)

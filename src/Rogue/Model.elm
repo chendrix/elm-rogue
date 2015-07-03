@@ -4,12 +4,13 @@ import List exposing (..)
 import Maybe exposing (..)
 import Random exposing (..)
 import Matrix exposing (..)
+import Time exposing (..)
 
 import Now
 
 type alias GameMap = Matrix Cell
 
-type alias HitPoints = Int
+type alias HitPoints = Float
 type alias Player =
   { inventory : List Item
   , hp : HitPoints
@@ -34,10 +35,6 @@ type Cell
 type alias Dir =
   { x : Int
   , y : Int
-  }
-
-type alias Input =
-  { dir : Dir
   }
 
 newPlayer : Player

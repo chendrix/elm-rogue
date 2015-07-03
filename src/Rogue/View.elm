@@ -35,7 +35,7 @@ viewPlayer : Player -> Element
 viewPlayer {inventory, hp} =
   flow down
     [ txt (String.join "" ["Item Count: ", List.length inventory |> toString ])
-    , txt (String.join "" ["Current HP: ", hp |> toString ])
+    , txt (String.join "" ["Current HP: ", floor hp |> toString ])
     ]
 
 
